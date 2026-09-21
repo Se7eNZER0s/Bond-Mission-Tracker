@@ -19,7 +19,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 .bonded-row{margin-top:6px}.bonded{width:100%;height:30px;font-size:10px}.bonded:has(input:checked){background:#fff7cc;border-color:#d6a800;color:#876800}
 .hide-btn{position:absolute;top:5px;right:5px;border:0;background:transparent;color:#888;font-size:10px;padding:3px}
 .version{text-align:center;color:#999;font-size:9px;margin-top:12px;letter-spacing:.3px}.add-panel{display:none;margin-bottom:9px;padding:8px;border:1px solid #ccc;border-radius:10px;background:#fff}.add-panel.open{display:block}.add-title{font-size:11px;font-weight:700;margin-bottom:6px}.hidden-list{display:flex;flex-wrap:wrap;gap:5px}.add-item{font-size:10px;padding:6px 8px;border:1px solid #bbb;border-radius:7px;background:#fafafa}
-.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .12s ease,box-shadow .12s ease}.editing .card *{user-select:none;-webkit-user-select:none}.card.dragging{opacity:1;transform:scale(1.035) translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.22);z-index:20;cursor:grabbing}.card.dragging:after{content:"DRAGGING";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.7px;padding:3px 6px;border-radius:6px;background:#222;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2)}.card.drop-target{border:2px dashed #555;padding:8px}
+.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .14s ease,box-shadow .14s ease}.editing .card *{user-select:none;-webkit-user-select:none}.card.dragging{opacity:1;transform:scale(1.06) translateY(-7px);box-shadow:0 18px 38px rgba(0,0,0,.28),0 0 0 2px rgba(15,157,138,.35);z-index:100;cursor:grabbing}.card.dragging:after{content:"MOVE";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.9px;padding:3px 7px;border-radius:6px;background:#222;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);pointer-events:none}.card.drop-target{border:2px dashed #555;padding:8px}
 @media(max-width:520px){.header{align-items:flex-start}h1{font-size:18px}.actions{max-width:65%}.action,.reset{font-size:10px;padding:6px}.grid{gap:6px}.card{min-height:132px;padding:8px}.name{font-size:10px}.toggle{height:34px;font-size:10px}.bonded{height:29px;font-size:9px}}
 </style>
 </head>
@@ -60,7 +60,7 @@ grid.addEventListener("click",e=>{const b=e.target.closest(".hide-btn");if(b){co
 
 grid.addEventListener("change",save);
 
-let pointerCard=null,pointerId=null,dragging=false,lastY=0;
+let pointerCard=null,pointerId=null,dragging=false,lastY=0,holdTimer=null,dragOffsetY=0;
 function moveCard(y){
   if(!pointerCard)return;
   const cards=[...grid.querySelectorAll(".card")].filter(c=>c.style.display!=="none"&&c!==pointerCard);
@@ -73,25 +73,43 @@ grid.addEventListener("pointerdown",e=>{
   if(!document.body.classList.contains("editing")||e.target.closest("button,label"))return;
   const c=e.target.closest(".card");if(!c||c.style.display==="none")return;
   pointerCard=c;pointerId=e.pointerId;lastY=e.clientY;dragging=false;
+  const r=c.getBoundingClientRect();dragOffsetY=e.clientY-r.top;
   c.setPointerCapture?.(pointerId);
+  holdTimer=setTimeout(()=>{
+    if(pointerCard&&pointerId===e.pointerId){
+      dragging=true;
+      c.classList.add("dragging");
+      navigator.vibrate?.(25);
+    }
+  },180);
   e.preventDefault();
 });
 grid.addEventListener("pointermove",e=>{
   if(!pointerCard||e.pointerId!==pointerId)return;
   e.preventDefault();
-  if(!dragging && Math.abs(e.clientY-lastY)>6){dragging=true;pointerCard.classList.add("dragging");navigator.vibrate?.(15)}
-  if(dragging)moveCard(e.clientY);
+  if(!dragging && (Math.abs(e.clientY-lastY)>7 || Math.abs(e.clientX-(pointerCard.getBoundingClientRect().left+pointerCard.getBoundingClientRect().width/2))>7)){
+    clearTimeout(holdTimer);
+    dragging=true;
+    pointerCard.classList.add("dragging");
+    navigator.vibrate?.(15);
+  }
+  if(dragging)moveCard(e.clientY-dragOffsetY);
 });
 function endPointer(e){
   if(!pointerCard||e.pointerId!==pointerId)return;
   e.preventDefault();
+  clearTimeout(holdTimer);
   if(dragging){pointerCard.classList.remove("dragging");save()}
   pointerCard.releasePointerCapture?.(pointerId);
   pointerCard=null;pointerId=null;dragging=false;
 }
 grid.addEventListener("pointerup",endPointer);
 grid.addEventListener("pointercancel",endPointer);
-grid.addEventListener("lostpointercapture",()=>{if(pointerCard&&dragging){pointerCard.classList.remove("dragging");save()}pointerCard=null;pointerId=null;dragging=false});
+grid.addEventListener("lostpointercapture",()=>{
+  clearTimeout(holdTimer);
+  if(pointerCard&&dragging){pointerCard.classList.remove("dragging");save()}
+  pointerCard=null;pointerId=null;dragging=false;
+});
 resetBtn.onclick=()=>{grid.querySelectorAll(".backup-check,.bonded-check").forEach(x=>x.checked=false);save()};
 load();render();
 })();
