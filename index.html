@@ -20,7 +20,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 .hide-btn{position:absolute;top:5px;right:5px;border:0;background:transparent;color:#888;font-size:10px;padding:3px}
 .version{text-align:center;color:#999;font-size:9px;margin-top:12px;letter-spacing:.3px}.add-panel{display:none;margin-bottom:9px;padding:8px;border:1px solid #ccc;border-radius:10px;background:#fff}.add-panel.open{display:block}.add-title{font-size:11px;font-weight:700;margin-bottom:6px}.hidden-list{display:flex;flex-wrap:wrap;gap:5px}.add-item{font-size:10px;padding:6px 8px;border:1px solid #bbb;border-radius:7px;background:#fafafa}
 .editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.editing .card *{user-select:none;-webkit-user-select:none}.editing .card button,.editing .card label{pointer-events:none}.card.dragging{position:fixed!important;margin:0!important;opacity:1;transform:scale(1.06);box-shadow:0 20px 45px rgba(0,0,0,.30),0 0 0 2px rgba(15,157,138,.4);z-index:1000;cursor:grabbing;pointer-events:none;transition:none}.card.dragging:after{content:"MOVE";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.9px;padding:3px 7px;border-radius:6px;background:#222;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);pointer-events:none}.drag-placeholder{border:2px dashed #0f9d8a;border-radius:10px;background:#e9faf7;min-height:132px;box-shadow:inset 0 0 0 1px rgba(15,157,138,.08)}.card.drop-target{border:2px dashed #555;padding:8px}
-@media(max-width:520px){.header{align-items:flex-start}h1{font-size:18px}.actions{max-width:65%}.action,.reset{font-size:10px;padding:6px}.grid{gap:6px}.card{min-height:132px;padding:8px}.name{font-size:10px}.toggle{height:34px;font-size:10px}.bonded{height:29px;font-size:9px}}
+@media(max-width:520px){.header{align-items:stretch}h1{font-size:18px}.actions{max-width:65%}.action,.reset{font-size:10px;padding:6px}.grid{gap:6px}.card{min-height:132px;padding:8px}.name{font-size:10px}.toggle{height:34px;font-size:10px}.bonded{height:29px;font-size:9px}}
 </style>
 </head>
 <body>
@@ -31,7 +31,8 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 <button class="reset" id="resetBtn" type="button">Reset Mission</button>
 </div></div>
 <div class="add-panel" id="addPanel"><div class="add-title">Hidden Pairs — tap a pair to show it</div><div class="hidden-list" id="hiddenList"></div></div>
-<div class="grid" id="grid"></div>\n<div class="version">Version 1.8</div>
+<div class="grid" id="grid"></div>
+<div class="version">Version 1.9</div>
 </div>
 <script>
 (()=>{
@@ -49,11 +50,13 @@ pairs.forEach((p,i)=>{grid.insertAdjacentHTML("beforeend",`<div class="card" dat
 <button class="hide-btn" type="button">Hide</button></div>`)});
 let hidden=[],dragId=null;
 const col1=document.getElementById("col1"),col2=document.getElementById("col2"),addBtn=document.getElementById("addBtn"),addPanel=document.getElementById("addPanel"),hiddenList=document.getElementById("hiddenList"),editBtn=document.getElementById("editBtn"),savePosBtn=document.getElementById("savePosBtn"),resetBtn=document.getElementById("resetBtn");
-function setColumns(n){grid.classList.toggle("one-col",n===1);col1.classList.toggle("active",n===1);col2.classList.toggle("active",n===2);try{localStorage.setItem(COLKEY,String(n))}catch(e){}}\nfunction save(){const state={order:[...grid.children].map(c=>+c.dataset.id),hidden,checks:Object.fromEntries([...grid.children].map(c=>[c.dataset.id,{b1:c.querySelector('[data-type="b1"]').checked,b2:c.querySelector('[data-type="b2"]').checked,f:c.querySelector(".bonded-check").checked}]))};try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function setColumns(n){grid.classList.toggle("one-col",n===1);col1.classList.toggle("active",n===1);col2.classList.toggle("active",n===2);try{localStorage.setItem(COLKEY,String(n))}catch(e){}}
+function save(){const state={order:[...grid.children].map(c=>+c.dataset.id),hidden,checks:Object.fromEntries([...grid.children].map(c=>[c.dataset.id,{b1:c.querySelector('[data-type="b1"]').checked,b2:c.querySelector('[data-type="b2"]').checked,f:c.querySelector(".bonded-check").checked}]))};try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(!x)return;hidden=x.hidden||[];const m=new Map([...grid.children].map(c=>[+c.dataset.id,c]));(x.order||[]).forEach(id=>m.has(id)&&grid.appendChild(m.get(id)));Object.entries(x.checks||{}).forEach(([id,v])=>{const c=m.get(+id);if(c){c.querySelector('[data-type="b1"]').checked=!!v.b1;c.querySelector('[data-type="b2"]').checked=!!v.b2;c.querySelector(".bonded-check").checked=!!v.f}})}catch(e){}}
 function render(){const hs=new Set(hidden);[...grid.children].forEach(c=>c.style.display=hs.has(+c.dataset.id)?"none":"");hiddenList.innerHTML="";if(!hidden.length){hiddenList.textContent="No hidden pairs";return}hidden.forEach(id=>{const c=grid.querySelector('.card[data-id="'+id+'"]');if(!c)return;const b=document.createElement("button");b.className="add-item";b.type="button";b.textContent=c.querySelector(".name").textContent;b.onclick=()=>{hidden=hidden.filter(x=>x!==id);render();save()};hiddenList.appendChild(b)})}
 function setEditing(on){document.body.classList.toggle("editing",on);editBtn.classList.toggle("active",on);editBtn.textContent=on?"Done Editing":"Edit Position";if(on){document.body.style.userSelect="none";document.body.style.webkitUserSelect="none"}else{document.body.style.userSelect="";document.body.style.webkitUserSelect=""}}
-col1.onclick=()=>setColumns(1);col2.onclick=()=>setColumns(2);\naddBtn.onclick=()=>{addPanel.classList.toggle("open");addBtn.classList.toggle("active",addPanel.classList.contains("open"))};
+col1.onclick=()=>setColumns(1);col2.onclick=()=>setColumns(2);
+addBtn.onclick=()=>{addPanel.classList.toggle("open");addBtn.classList.toggle("active",addPanel.classList.contains("open"))};
 editBtn.onclick=()=>{const on=!document.body.classList.contains("editing");setEditing(on);if(!on)save()};
 
 grid.addEventListener("click",e=>{const b=e.target.closest(".hide-btn");if(b){const id=+b.closest(".card").dataset.id;if(!hidden.includes(id))hidden.push(id);render();save()}});
