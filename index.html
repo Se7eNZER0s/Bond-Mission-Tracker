@@ -19,7 +19,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 .bonded-row{margin-top:6px}.bonded{width:100%;height:30px;font-size:10px}.bonded:has(input:checked){background:#fff7cc;border-color:#d6a800;color:#876800}
 .hide-btn{position:absolute;top:5px;right:5px;border:0;background:transparent;color:#888;font-size:10px;padding:3px}
 .version{text-align:center;color:#999;font-size:9px;margin-top:12px;letter-spacing:.3px}.add-panel{display:none;margin-bottom:9px;padding:8px;border:1px solid #ccc;border-radius:10px;background:#fff}.add-panel.open{display:block}.add-title{font-size:11px;font-weight:700;margin-bottom:6px}.hidden-list{display:flex;flex-wrap:wrap;gap:5px}.add-item{font-size:10px;padding:6px 8px;border:1px solid #bbb;border-radius:7px;background:#fafafa}
-.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .14s ease,box-shadow .14s ease}.editing .card *{user-select:none;-webkit-user-select:none}.card.dragging{opacity:1;transform:scale(1.06) translateY(-7px);box-shadow:0 18px 38px rgba(0,0,0,.28),0 0 0 2px rgba(15,157,138,.35);z-index:100;cursor:grabbing}.card.dragging:after{content:"MOVE";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.9px;padding:3px 7px;border-radius:6px;background:#222;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);pointer-events:none}.card.drop-target{border:2px dashed #555;padding:8px}
+.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.editing .card *{user-select:none;-webkit-user-select:none}.card.dragging{position:fixed!important;margin:0!important;opacity:1;transform:scale(1.06);box-shadow:0 20px 45px rgba(0,0,0,.30),0 0 0 2px rgba(15,157,138,.4);z-index:1000;cursor:grabbing;pointer-events:none;transition:none}.card.dragging:after{content:"MOVE";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.9px;padding:3px 7px;border-radius:6px;background:#222;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);pointer-events:none}.drag-placeholder{border:2px dashed #0f9d8a;border-radius:10px;background:#e9faf7;min-height:132px;box-shadow:inset 0 0 0 1px rgba(15,157,138,.08)}.card.drop-target{border:2px dashed #555;padding:8px}
 @media(max-width:520px){.header{align-items:flex-start}h1{font-size:18px}.actions{max-width:65%}.action,.reset{font-size:10px;padding:6px}.grid{gap:6px}.card{min-height:132px;padding:8px}.name{font-size:10px}.toggle{height:34px;font-size:10px}.bonded{height:29px;font-size:9px}}
 </style>
 </head>
@@ -31,7 +31,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 <button class="reset" id="resetBtn" type="button">Reset Mission</button>
 </div></div>
 <div class="add-panel" id="addPanel"><div class="add-title">Hidden Pairs — tap a pair to show it</div><div class="hidden-list" id="hiddenList"></div></div>
-<div class="grid" id="grid"></div>\n<div class="version">Version 1.3</div>
+<div class="grid" id="grid"></div>\n<div class="version">Version 1.5</div>
 </div>
 <script>
 (()=>{
@@ -60,54 +60,90 @@ grid.addEventListener("click",e=>{const b=e.target.closest(".hide-btn");if(b){co
 
 grid.addEventListener("change",save);
 
-let pointerCard=null,pointerId=null,dragging=false,lastY=0,holdTimer=null,dragOffsetY=0;
-function moveCard(y){
+let pointerCard=null,pointerId=null,dragging=false,lastY=0,holdTimer=null,dragOffsetX=0,dragOffsetY=0,placeholder=null;
+function positionDragged(x,y){
   if(!pointerCard)return;
-  const cards=[...grid.querySelectorAll(".card")].filter(c=>c.style.display!=="none"&&c!==pointerCard);
-  let target=null;
-  for(const c of cards){const r=c.getBoundingClientRect();if(y<r.top+r.height/2){target=c;break}}
-  if(target) grid.insertBefore(pointerCard,target);
-  else if(cards.length) grid.appendChild(pointerCard);
+  pointerCard.style.left=(x-dragOffsetX)+"px";
+  pointerCard.style.top=(y-dragOffsetY)+"px";
 }
+function movePlaceholder(x,y){
+  if(!placeholder)return;
+  const cards=[...grid.querySelectorAll(".card")].filter(c=>c!==pointerCard&&c.style.display!=="none");
+  let target=null;
+  for(const c of cards){
+    const r=c.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom){target=c;break}
+  }
+  if(!target){
+    let best=null,bestD=Infinity;
+    for(const c of cards){
+      const r=c.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,d=(x-cx)**2+(y-cy)**2;
+      if(d<bestD){bestD=d;best=c}
+    }
+    target=best;
+  }
+  if(target){
+    const r=target.getBoundingClientRect();
+    if(y<r.top+r.height/2 || (Math.abs(y-(r.top+r.height/2))<r.height*.2 && x<r.left+r.width/2)) grid.insertBefore(placeholder,target);
+    else grid.insertBefore(placeholder,target.nextSibling);
+  }else grid.appendChild(placeholder);
+}
+function beginDrag(){
+  if(!pointerCard||dragging)return;
+  dragging=true;
+  const r=pointerCard.getBoundingClientRect();
+  placeholder=document.createElement("div");
+  placeholder.className="drag-placeholder";
+  placeholder.style.height=r.height+"px";
+  placeholder.style.width=r.width+"px";
+  grid.insertBefore(placeholder,pointerCard);
+  pointerCard.classList.add("dragging");
+  pointerCard.style.width=r.width+"px";
+  pointerCard.style.height=r.height+"px";
+  positionDragged(lastX,lastY);
+  navigator.vibrate?.(25);
+}
+let lastX=0;
 grid.addEventListener("pointerdown",e=>{
   if(!document.body.classList.contains("editing")||e.target.closest("button,label"))return;
   const c=e.target.closest(".card");if(!c||c.style.display==="none")return;
-  pointerCard=c;pointerId=e.pointerId;lastY=e.clientY;dragging=false;
-  const r=c.getBoundingClientRect();dragOffsetY=e.clientY-r.top;
+  pointerCard=c;pointerId=e.pointerId;lastX=e.clientX;lastY=e.clientY;dragging=false;
+  const r=c.getBoundingClientRect();dragOffsetX=e.clientX-r.left;dragOffsetY=e.clientY-r.top;
   c.setPointerCapture?.(pointerId);
-  holdTimer=setTimeout(()=>{
-    if(pointerCard&&pointerId===e.pointerId){
-      dragging=true;
-      c.classList.add("dragging");
-      navigator.vibrate?.(25);
-    }
-  },180);
+  holdTimer=setTimeout(beginDrag,180);
   e.preventDefault();
 });
 grid.addEventListener("pointermove",e=>{
   if(!pointerCard||e.pointerId!==pointerId)return;
+  lastX=e.clientX;lastY=e.clientY;
   e.preventDefault();
-  if(!dragging && (Math.abs(e.clientY-lastY)>7 || Math.abs(e.clientX-(pointerCard.getBoundingClientRect().left+pointerCard.getBoundingClientRect().width/2))>7)){
-    clearTimeout(holdTimer);
-    dragging=true;
-    pointerCard.classList.add("dragging");
-    navigator.vibrate?.(15);
+  if(!dragging && (Math.abs(e.clientX-(pointerCard.getBoundingClientRect().left+dragOffsetX))>7 || Math.abs(e.clientY-(pointerCard.getBoundingClientRect().top+dragOffsetY))>7)){
+    clearTimeout(holdTimer);beginDrag();
   }
-  if(dragging)moveCard(e.clientY-dragOffsetY);
+  if(dragging){positionDragged(e.clientX,e.clientY);movePlaceholder(e.clientX,e.clientY)}
 });
-function endPointer(e){
+function finishDrag(e){
   if(!pointerCard||e.pointerId!==pointerId)return;
-  e.preventDefault();
-  clearTimeout(holdTimer);
-  if(dragging){pointerCard.classList.remove("dragging");save()}
+  e.preventDefault();clearTimeout(holdTimer);
+  if(dragging){
+    pointerCard.classList.remove("dragging");
+    pointerCard.style.position="";pointerCard.style.left="";pointerCard.style.top="";pointerCard.style.width="";pointerCard.style.height="";
+    if(placeholder){grid.insertBefore(pointerCard,placeholder);placeholder.remove();placeholder=null}
+    save();
+  }
   pointerCard.releasePointerCapture?.(pointerId);
   pointerCard=null;pointerId=null;dragging=false;
 }
-grid.addEventListener("pointerup",endPointer);
-grid.addEventListener("pointercancel",endPointer);
+grid.addEventListener("pointerup",finishDrag);
+grid.addEventListener("pointercancel",finishDrag);
 grid.addEventListener("lostpointercapture",()=>{
   clearTimeout(holdTimer);
-  if(pointerCard&&dragging){pointerCard.classList.remove("dragging");save()}
+  if(pointerCard&&dragging){
+    pointerCard.classList.remove("dragging");
+    pointerCard.style.position="";pointerCard.style.left="";pointerCard.style.top="";pointerCard.style.width="";pointerCard.style.height="";
+    if(placeholder){grid.insertBefore(pointerCard,placeholder);placeholder.remove();placeholder=null}
+    save();
+  }
   pointerCard=null;pointerId=null;dragging=false;
 });
 resetBtn.onclick=()=>{grid.querySelectorAll(".backup-check,.bonded-check").forEach(x=>x.checked=false);save()};
