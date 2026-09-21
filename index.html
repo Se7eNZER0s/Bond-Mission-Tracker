@@ -10,8 +10,8 @@ body{margin:0;padding:14px 10px 28px;background:#f7f7f8;color:#171717;font-famil
 .wrap{max-width:900px;margin:auto}
 .header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:3px 0 10px}
 h1{font-size:20px;margin:0}.actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px solid #aaa;border-radius:8px;background:#fff;color:#222}.action.active{background:#222;color:#fff}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px solid #aaa;border-radius:8px;background:#fff;color:#222}.action.active{background:#222;color:#fff}.col-setting{display:flex;align-items:center;gap:3px;font-size:10px;color:#666;border:1px solid #bbb;border-radius:8px;background:#fff;padding:2px 3px}.col-setting span{padding:0 3px}.col-btn{font:inherit;font-size:10px;min-width:24px;height:24px;padding:0;border:0;border-radius:6px;background:transparent;color:#555}.col-btn.active{background:#222;color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.grid.one-col{grid-template-columns:1fr}
 .card{position:relative;display:flex;flex-direction:column;min-height:132px;padding:9px;border:1px solid #cfcfcf;border-radius:10px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .pairtext{flex:1;min-width:0;padding:1px 22px 0 4px}.name{font-size:11px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}.ach{font-size:9px;color:#777;min-height:11px;margin-top:3px}
 .toggle-row{display:flex;gap:6px;margin-top:8px}.toggle,.bonded{display:flex;align-items:center;justify-content:center;border:1px solid #aaa;border-radius:8px;background:#fafafa;cursor:pointer;user-select:none;font-size:11px;font-weight:600}.toggle{flex:1;height:36px}.toggle input,.bonded input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
@@ -26,12 +26,12 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 <body>
 <div class="wrap">
 <div class="header"><h1>Bond Mission Tracker</h1><div class="actions">
-<button class="action" id="addBtn" type="button">Add Pair</button>
+<div class="col-setting" aria-label="Card columns"><span>Columns</span><button class="col-btn" id="col1" type="button">1</button><button class="col-btn active" id="col2" type="button">2</button></div><button class="action" id="addBtn" type="button">Add Pair</button>
 <button class="action" id="editBtn" type="button">Edit Position</button>
 <button class="reset" id="resetBtn" type="button">Reset Mission</button>
 </div></div>
 <div class="add-panel" id="addPanel"><div class="add-title">Hidden Pairs — tap a pair to show it</div><div class="hidden-list" id="hiddenList"></div></div>
-<div class="grid" id="grid"></div>\n<div class="version">Version 1.5</div>
+<div class="grid" id="grid"></div>\n<div class="version">Version 1.6</div>
 </div>
 <script>
 (()=>{
@@ -41,19 +41,19 @@ const pairs=[
 ["BR-1 Astromech ↔ Hawks",""],["BR-1 Astromech ↔ Trick",""],["BR-1 Astromech ↔ Luco Bronc",""],["BR-1 Astromech ↔ Kabb Uppercut",""],["BR-1 Astromech ↔ Jae Mordant",""],
 ["Astromech 2 ↔ Hawks",""],["Astromech 2 ↔ Trick",""],["Astromech 2 ↔ Luco Bronc",""],["Astromech 2 ↔ Kabb Uppercut",""],["Astromech 2 ↔ Jae Mordant",""]
 ];
-const grid=document.getElementById("grid"),KEY="bondMissionTrackerV6";
+const grid=document.getElementById("grid"),KEY="bondMissionTrackerV6",COLKEY="bondMissionTrackerColumnsV1";
 pairs.forEach((p,i)=>{grid.insertAdjacentHTML("beforeend",`<div class="card" data-id="${i}">
 <div class="pairtext"><div class="name">${p[0]}</div><div class="ach">${p[1]}</div></div>
 <div class="toggle-row"><label class="toggle b1"><input class="backup-check" data-type="b1" type="checkbox"><span>B1</span></label><label class="toggle b2"><input class="backup-check" data-type="b2" type="checkbox"><span>B2</span></label></div>
 <div class="bonded-row"><label class="bonded"><input class="bonded-check" type="checkbox"><span>Fully Bonded</span></label></div>
 <button class="hide-btn" type="button">Hide</button></div>`)});
 let hidden=[],dragId=null;
-const addBtn=document.getElementById("addBtn"),addPanel=document.getElementById("addPanel"),hiddenList=document.getElementById("hiddenList"),editBtn=document.getElementById("editBtn"),savePosBtn=document.getElementById("savePosBtn"),resetBtn=document.getElementById("resetBtn");
-function save(){const state={order:[...grid.children].map(c=>+c.dataset.id),hidden,checks:Object.fromEntries([...grid.children].map(c=>[c.dataset.id,{b1:c.querySelector('[data-type="b1"]').checked,b2:c.querySelector('[data-type="b2"]').checked,f:c.querySelector(".bonded-check").checked}]))};try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+const col1=document.getElementById("col1"),col2=document.getElementById("col2"),addBtn=document.getElementById("addBtn"),addPanel=document.getElementById("addPanel"),hiddenList=document.getElementById("hiddenList"),editBtn=document.getElementById("editBtn"),savePosBtn=document.getElementById("savePosBtn"),resetBtn=document.getElementById("resetBtn");
+function setColumns(n){grid.classList.toggle("one-col",n===1);col1.classList.toggle("active",n===1);col2.classList.toggle("active",n===2);try{localStorage.setItem(COLKEY,String(n))}catch(e){}}\nfunction save(){const state={order:[...grid.children].map(c=>+c.dataset.id),hidden,checks:Object.fromEntries([...grid.children].map(c=>[c.dataset.id,{b1:c.querySelector('[data-type="b1"]').checked,b2:c.querySelector('[data-type="b2"]').checked,f:c.querySelector(".bonded-check").checked}]))};try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(!x)return;hidden=x.hidden||[];const m=new Map([...grid.children].map(c=>[+c.dataset.id,c]));(x.order||[]).forEach(id=>m.has(id)&&grid.appendChild(m.get(id)));Object.entries(x.checks||{}).forEach(([id,v])=>{const c=m.get(+id);if(c){c.querySelector('[data-type="b1"]').checked=!!v.b1;c.querySelector('[data-type="b2"]').checked=!!v.b2;c.querySelector(".bonded-check").checked=!!v.f}})}catch(e){}}
 function render(){const hs=new Set(hidden);[...grid.children].forEach(c=>c.style.display=hs.has(+c.dataset.id)?"none":"");hiddenList.innerHTML="";if(!hidden.length){hiddenList.textContent="No hidden pairs";return}hidden.forEach(id=>{const c=grid.querySelector('.card[data-id="'+id+'"]');if(!c)return;const b=document.createElement("button");b.className="add-item";b.type="button";b.textContent=c.querySelector(".name").textContent;b.onclick=()=>{hidden=hidden.filter(x=>x!==id);render();save()};hiddenList.appendChild(b)})}
 function setEditing(on){document.body.classList.toggle("editing",on);editBtn.classList.toggle("active",on);editBtn.textContent=on?"Done Editing":"Edit Position";if(on){document.body.style.userSelect="none";document.body.style.webkitUserSelect="none"}else{document.body.style.userSelect="";document.body.style.webkitUserSelect=""}}
-addBtn.onclick=()=>{addPanel.classList.toggle("open");addBtn.classList.toggle("active",addPanel.classList.contains("open"))};
+col1.onclick=()=>setColumns(1);col2.onclick=()=>setColumns(2);\naddBtn.onclick=()=>{addPanel.classList.toggle("open");addBtn.classList.toggle("active",addPanel.classList.contains("open"))};
 editBtn.onclick=()=>{const on=!document.body.classList.contains("editing");setEditing(on);if(!on)save()};
 
 grid.addEventListener("click",e=>{const b=e.target.closest(".hide-btn");if(b){const id=+b.closest(".card").dataset.id;if(!hidden.includes(id))hidden.push(id);render();save()}});
@@ -147,7 +147,7 @@ grid.addEventListener("lostpointercapture",()=>{
   pointerCard=null;pointerId=null;dragging=false;
 });
 resetBtn.onclick=()=>{grid.querySelectorAll(".backup-check,.bonded-check").forEach(x=>x.checked=false);save()};
-load();render();
+load();render();let savedCols=2;try{savedCols=localStorage.getItem(COLKEY)==="1"?1:2}catch(e){}setColumns(savedCols);
 })();
 </script>
 </body>
