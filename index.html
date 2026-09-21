@@ -18,8 +18,8 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 .b1:has(input:checked){background:#dff7f3;border-color:#0f9d8a;color:#08796b}.b2:has(input:checked){background:#fff0df;border-color:#f28c28;color:#b85d00}
 .bonded-row{margin-top:6px}.bonded{width:100%;height:30px;font-size:10px}.bonded:has(input:checked){background:#fff7cc;border-color:#d6a800;color:#876800}
 .hide-btn{position:absolute;top:5px;right:5px;border:0;background:transparent;color:#888;font-size:10px;padding:3px}
-.add-panel{display:none;margin-bottom:9px;padding:8px;border:1px solid #ccc;border-radius:10px;background:#fff}.add-panel.open{display:block}.add-title{font-size:11px;font-weight:700;margin-bottom:6px}.hidden-list{display:flex;flex-wrap:wrap;gap:5px}.add-item{font-size:10px;padding:6px 8px;border:1px solid #bbb;border-radius:7px;background:#fafafa}
-.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.editing .card *{user-select:none;-webkit-user-select:none}.card.dragging{opacity:.45}.card.drop-target{border:2px dashed #555;padding:8px}
+.version{text-align:center;color:#999;font-size:9px;margin-top:12px;letter-spacing:.3px}.add-panel{display:none;margin-bottom:9px;padding:8px;border:1px solid #ccc;border-radius:10px;background:#fff}.add-panel.open{display:block}.add-title{font-size:11px;font-weight:700;margin-bottom:6px}.hidden-list{display:flex;flex-wrap:wrap;gap:5px}.add-item{font-size:10px;padding:6px 8px;border:1px solid #bbb;border-radius:7px;background:#fafafa}
+.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .12s ease,box-shadow .12s ease}.editing .card *{user-select:none;-webkit-user-select:none}.card.dragging{opacity:1;transform:scale(1.035) translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.22);z-index:20;cursor:grabbing}.card.dragging:after{content:"DRAGGING";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.7px;padding:3px 6px;border-radius:6px;background:#222;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2)}.card.drop-target{border:2px dashed #555;padding:8px}
 @media(max-width:520px){.header{align-items:flex-start}h1{font-size:18px}.actions{max-width:65%}.action,.reset{font-size:10px;padding:6px}.grid{gap:6px}.card{min-height:132px;padding:8px}.name{font-size:10px}.toggle{height:34px;font-size:10px}.bonded{height:29px;font-size:9px}}
 </style>
 </head>
@@ -31,7 +31,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 <button class="reset" id="resetBtn" type="button">Reset Mission</button>
 </div></div>
 <div class="add-panel" id="addPanel"><div class="add-title">Hidden Pairs — tap a pair to show it</div><div class="hidden-list" id="hiddenList"></div></div>
-<div class="grid" id="grid"></div>
+<div class="grid" id="grid"></div>\n<div class="version">Version 1.3</div>
 </div>
 <script>
 (()=>{
@@ -79,7 +79,7 @@ grid.addEventListener("pointerdown",e=>{
 grid.addEventListener("pointermove",e=>{
   if(!pointerCard||e.pointerId!==pointerId)return;
   e.preventDefault();
-  if(!dragging && Math.abs(e.clientY-lastY)>6){dragging=true;pointerCard.classList.add("dragging")}
+  if(!dragging && Math.abs(e.clientY-lastY)>6){dragging=true;pointerCard.classList.add("dragging");navigator.vibrate?.(15)}
   if(dragging)moveCard(e.clientY);
 });
 function endPointer(e){
