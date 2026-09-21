@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bond Mission Tracker</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:14px 10px 28px;background:#f7f7f8;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:auto}
+.header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:3px 0 10px}
+h1{font-size:20px;margin:0}.actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px solid #aaa;border-radius:8px;background:#fff;color:#222}.action.active{background:#222;color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.card{position:relative;display:flex;flex-direction:column;min-height:132px;padding:9px;border:1px solid #cfcfcf;border-radius:10px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.pairtext{flex:1;min-width:0;padding:1px 22px 0 4px}.name{font-size:11px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}.ach{font-size:9px;color:#777;min-height:11px;margin-top:3px}
+.toggle-row{display:flex;gap:6px;margin-top:8px}.toggle,.bonded{display:flex;align-items:center;justify-content:center;border:1px solid #aaa;border-radius:8px;background:#fafafa;cursor:pointer;user-select:none;font-size:11px;font-weight:600}.toggle{flex:1;height:36px}.toggle input,.bonded input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.b1:has(input:checked){background:#dff7f3;border-color:#0f9d8a;color:#08796b}.b2:has(input:checked){background:#fff0df;border-color:#f28c28;color:#b85d00}
+.bonded-row{margin-top:6px}.bonded{width:100%;height:30px;font-size:10px}.bonded:has(input:checked){background:#fff7cc;border-color:#d6a800;color:#876800}
+.hide-btn{position:absolute;top:5px;right:5px;border:0;background:transparent;color:#888;font-size:10px;padding:3px}
+.add-panel{display:none;margin-bottom:9px;padding:8px;border:1px solid #ccc;border-radius:10px;background:#fff}.add-panel.open{display:block}.add-title{font-size:11px;font-weight:700;margin-bottom:6px}.hidden-list{display:flex;flex-wrap:wrap;gap:5px}.add-item{font-size:10px;padding:6px 8px;border:1px solid #bbb;border-radius:7px;background:#fafafa}
+.editing .card{touch-action:none;cursor:grab}.card.dragging{opacity:.45}.card.drop-target{border:2px dashed #555;padding:8px}
+@media(max-width:520px){.header{align-items:flex-start}h1{font-size:18px}.actions{max-width:65%}.action,.reset{font-size:10px;padding:6px}.grid{gap:6px}.card{min-height:132px;padding:8px}.name{font-size:10px}.toggle{height:34px;font-size:10px}.bonded{height:29px;font-size:9px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="header"><h1>Bond Mission Tracker</h1><div class="actions">
+<button class="action" id="addBtn" type="button">Add Pair</button>
+<button class="action" id="editBtn" type="button">Edit Position</button>
+<button class="action" id="savePosBtn" type="button" style="display:none">Save Position</button>
+<button class="reset" id="resetBtn" type="button">Reset Mission</button>
+</div></div>
+<div class="add-panel" id="addPanel"><div class="add-title">Hidden Pairs — tap a pair to show it</div><div class="hidden-list" id="hiddenList"></div></div>
+<div class="grid" id="grid"></div>
+</div>
+<script>
+(()=>{
+const pairs=[
+["Hawks ↔ Trick","Old Friends"],["Hawks ↔ Luco Bronc","Sharp Shooters"],["Hawks ↔ Kabb Uppercut","Mate and Marrow"],["Hawks ↔ Jae Mordant","Class and Distinction"],["Trick ↔ Luco Bronc","Heroes on Both Sides"],["Kabb Uppercut ↔ Jae Mordant","The Baroness and the Boxer"],
+["Custom Operator 1 ↔ Hawks",""],["Custom Operator 1 ↔ Trick",""],["Custom Operator 1 ↔ Luco Bronc",""],["Custom Operator 1 ↔ Kabb Uppercut",""],["Custom Operator 1 ↔ Jae Mordant",""],["Custom Operator 1 ↔ BR-1 Astromech",""],["Custom Operator 1 ↔ Astromech 2",""],
+["BR-1 Astromech ↔ Hawks",""],["BR-1 Astromech ↔ Trick",""],["BR-1 Astromech ↔ Luco Bronc",""],["BR-1 Astromech ↔ Kabb Uppercut",""],["BR-1 Astromech ↔ Jae Mordant",""],
+["Astromech 2 ↔ Hawks",""],["Astromech 2 ↔ Trick",""],["Astromech 2 ↔ Luco Bronc",""],["Astromech 2 ↔ Kabb Uppercut",""],["Astromech 2 ↔ Jae Mordant",""]
+];
+const grid=document.getElementById("grid"),KEY="bondMissionTrackerV6";
+pairs.forEach((p,i)=>{grid.insertAdjacentHTML("beforeend",`<div class="card" data-id="${i}">
+<div class="pairtext"><div class="name">${p[0]}</div><div class="ach">${p[1]}</div></div>
+<div class="toggle-row"><label class="toggle b1"><input class="backup-check" data-type="b1" type="checkbox"><span>B1</span></label><label class="toggle b2"><input class="backup-check" data-type="b2" type="checkbox"><span>B2</span></label></div>
+<div class="bonded-row"><label class="bonded"><input class="bonded-check" type="checkbox"><span>Fully Bonded</span></label></div>
+<button class="hide-btn" type="button">Hide</button></div>`)});
+let hidden=[],dragId=null;
+const addBtn=document.getElementById("addBtn"),addPanel=document.getElementById("addPanel"),hiddenList=document.getElementById("hiddenList"),editBtn=document.getElementById("editBtn"),savePosBtn=document.getElementById("savePosBtn"),resetBtn=document.getElementById("resetBtn");
+function save(){const state={order:[...grid.children].map(c=>+c.dataset.id),hidden,checks:Object.fromEntries([...grid.children].map(c=>[c.dataset.id,{b1:c.querySelector('[data-type="b1"]').checked,b2:c.querySelector('[data-type="b2"]').checked,f:c.querySelector(".bonded-check").checked}]))};try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(!x)return;hidden=x.hidden||[];const m=new Map([...grid.children].map(c=>[+c.dataset.id,c]));(x.order||[]).forEach(id=>m.has(id)&&grid.appendChild(m.get(id)));Object.entries(x.checks||{}).forEach(([id,v])=>{const c=m.get(+id);if(c){c.querySelector('[data-type="b1"]').checked=!!v.b1;c.querySelector('[data-type="b2"]').checked=!!v.b2;c.querySelector(".bonded-check").checked=!!v.f}})}catch(e){}}
+function render(){const hs=new Set(hidden);[...grid.children].forEach(c=>c.style.display=hs.has(+c.dataset.id)?"none":"");hiddenList.innerHTML="";if(!hidden.length){hiddenList.textContent="No hidden pairs";return}hidden.forEach(id=>{const c=grid.querySelector('.card[data-id="'+id+'"]');if(!c)return;const b=document.createElement("button");b.className="add-item";b.type="button";b.textContent=c.querySelector(".name").textContent;b.onclick=()=>{hidden=hidden.filter(x=>x!==id);render();save()};hiddenList.appendChild(b)})}
+function setEditing(on){document.body.classList.toggle("editing",on);editBtn.classList.toggle("active",on);editBtn.textContent=on?"Editing Position":"Edit Position";savePosBtn.style.display=on?"inline-block":"none";[...grid.children].forEach(c=>c.draggable=on)}
+addBtn.onclick=()=>{addPanel.classList.toggle("open");addBtn.classList.toggle("active",addPanel.classList.contains("open"))};
+editBtn.onclick=()=>setEditing(!document.body.classList.contains("editing"));
+savePosBtn.onclick=()=>{save();setEditing(false)};
+grid.addEventListener("click",e=>{const b=e.target.closest(".hide-btn");if(b){const id=+b.closest(".card").dataset.id;if(!hidden.includes(id))hidden.push(id);render();save()}});
+grid.addEventListener("change",save);
+grid.addEventListener("dragstart",e=>{if(!document.body.classList.contains("editing")){e.preventDefault();return}const c=e.target.closest(".card");if(c){dragId=+c.dataset.id;c.classList.add("dragging")}});
+grid.addEventListener("dragover",e=>{if(!document.body.classList.contains("editing"))return;e.preventDefault();const t=e.target.closest(".card"),c=grid.querySelector('.card[data-id="'+dragId+'"]');if(!t||!c||t===c)return;const r=t.getBoundingClientRect();if(e.clientY<r.top+r.height/2)grid.insertBefore(c,t);else grid.insertBefore(c,t.nextSibling)});
+grid.addEventListener("dragend",e=>{e.target.closest(".card")?.classList.remove("dragging");dragId=null});
+let timer=null,touchCard=null,moved=false;
+grid.addEventListener("pointerdown",e=>{if(!document.body.classList.contains("editing")||e.pointerType==="mouse"||e.target.closest("button,label"))return;touchCard=e.target.closest(".card");moved=false;timer=setTimeout(()=>{moved=true;dragId=+touchCard.dataset.id;touchCard.classList.add("dragging");touchCard.setPointerCapture?.(e.pointerId)},280)});
+grid.addEventListener("pointermove",e=>{if(!touchCard||!moved)return;const t=document.elementFromPoint(e.clientX,e.clientY)?.closest(".card");if(!t||t===touchCard)return;const r=t.getBoundingClientRect();if(e.clientY<r.top+r.height/2)grid.insertBefore(touchCard,t);else grid.insertBefore(touchCard,t.nextSibling)});
+function end(){clearTimeout(timer);if(touchCard)touchCard.classList.remove("dragging");touchCard=null;moved=false;dragId=null}
+grid.addEventListener("pointerup",end);grid.addEventListener("pointercancel",end);
+resetBtn.onclick=()=>{grid.querySelectorAll(".backup-check,.bonded-check").forEach(x=>x.checked=false);save()};
+load();render();
+})();
+</script>
+</body>
+</html>
