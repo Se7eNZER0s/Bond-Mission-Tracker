@@ -19,7 +19,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 .bonded-row{margin-top:6px}.bonded{width:100%;height:30px;font-size:10px}.bonded:has(input:checked){background:#fff7cc;border-color:#d6a800;color:#876800}
 .hide-btn{position:absolute;top:5px;right:5px;border:0;background:transparent;color:#888;font-size:10px;padding:3px}
 .add-panel{display:none;margin-bottom:9px;padding:8px;border:1px solid #ccc;border-radius:10px;background:#fff}.add-panel.open{display:block}.add-title{font-size:11px;font-weight:700;margin-bottom:6px}.hidden-list{display:flex;flex-wrap:wrap;gap:5px}.add-item{font-size:10px;padding:6px 8px;border:1px solid #bbb;border-radius:7px;background:#fafafa}
-.editing .card{touch-action:none;cursor:grab}.card.dragging{opacity:.45}.card.drop-target{border:2px dashed #555;padding:8px}
+.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.editing .card *{user-select:none;-webkit-user-select:none}.card.dragging{opacity:.45}.card.drop-target{border:2px dashed #555;padding:8px}
 @media(max-width:520px){.header{align-items:flex-start}h1{font-size:18px}.actions{max-width:65%}.action,.reset{font-size:10px;padding:6px}.grid{gap:6px}.card{min-height:132px;padding:8px}.name{font-size:10px}.toggle{height:34px;font-size:10px}.bonded{height:29px;font-size:9px}}
 </style>
 </head>
@@ -28,7 +28,6 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 <div class="header"><h1>Bond Mission Tracker</h1><div class="actions">
 <button class="action" id="addBtn" type="button">Add Pair</button>
 <button class="action" id="editBtn" type="button">Edit Position</button>
-<button class="action" id="savePosBtn" type="button" style="display:none">Save Position</button>
 <button class="reset" id="resetBtn" type="button">Reset Mission</button>
 </div></div>
 <div class="add-panel" id="addPanel"><div class="add-title">Hidden Pairs — tap a pair to show it</div><div class="hidden-list" id="hiddenList"></div></div>
@@ -53,20 +52,46 @@ const addBtn=document.getElementById("addBtn"),addPanel=document.getElementById(
 function save(){const state={order:[...grid.children].map(c=>+c.dataset.id),hidden,checks:Object.fromEntries([...grid.children].map(c=>[c.dataset.id,{b1:c.querySelector('[data-type="b1"]').checked,b2:c.querySelector('[data-type="b2"]').checked,f:c.querySelector(".bonded-check").checked}]))};try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(!x)return;hidden=x.hidden||[];const m=new Map([...grid.children].map(c=>[+c.dataset.id,c]));(x.order||[]).forEach(id=>m.has(id)&&grid.appendChild(m.get(id)));Object.entries(x.checks||{}).forEach(([id,v])=>{const c=m.get(+id);if(c){c.querySelector('[data-type="b1"]').checked=!!v.b1;c.querySelector('[data-type="b2"]').checked=!!v.b2;c.querySelector(".bonded-check").checked=!!v.f}})}catch(e){}}
 function render(){const hs=new Set(hidden);[...grid.children].forEach(c=>c.style.display=hs.has(+c.dataset.id)?"none":"");hiddenList.innerHTML="";if(!hidden.length){hiddenList.textContent="No hidden pairs";return}hidden.forEach(id=>{const c=grid.querySelector('.card[data-id="'+id+'"]');if(!c)return;const b=document.createElement("button");b.className="add-item";b.type="button";b.textContent=c.querySelector(".name").textContent;b.onclick=()=>{hidden=hidden.filter(x=>x!==id);render();save()};hiddenList.appendChild(b)})}
-function setEditing(on){document.body.classList.toggle("editing",on);editBtn.classList.toggle("active",on);editBtn.textContent=on?"Editing Position":"Edit Position";savePosBtn.style.display=on?"inline-block":"none";[...grid.children].forEach(c=>c.draggable=on)}
+function setEditing(on){document.body.classList.toggle("editing",on);editBtn.classList.toggle("active",on);editBtn.textContent=on?"Done Editing":"Edit Position";if(on){document.body.style.userSelect="none";document.body.style.webkitUserSelect="none"}else{document.body.style.userSelect="";document.body.style.webkitUserSelect=""}}
 addBtn.onclick=()=>{addPanel.classList.toggle("open");addBtn.classList.toggle("active",addPanel.classList.contains("open"))};
-editBtn.onclick=()=>setEditing(!document.body.classList.contains("editing"));
-savePosBtn.onclick=()=>{save();setEditing(false)};
+editBtn.onclick=()=>{const on=!document.body.classList.contains("editing");setEditing(on);if(!on)save()};
+
 grid.addEventListener("click",e=>{const b=e.target.closest(".hide-btn");if(b){const id=+b.closest(".card").dataset.id;if(!hidden.includes(id))hidden.push(id);render();save()}});
+
 grid.addEventListener("change",save);
-grid.addEventListener("dragstart",e=>{if(!document.body.classList.contains("editing")){e.preventDefault();return}const c=e.target.closest(".card");if(c){dragId=+c.dataset.id;c.classList.add("dragging")}});
-grid.addEventListener("dragover",e=>{if(!document.body.classList.contains("editing"))return;e.preventDefault();const t=e.target.closest(".card"),c=grid.querySelector('.card[data-id="'+dragId+'"]');if(!t||!c||t===c)return;const r=t.getBoundingClientRect();if(e.clientY<r.top+r.height/2)grid.insertBefore(c,t);else grid.insertBefore(c,t.nextSibling)});
-grid.addEventListener("dragend",e=>{e.target.closest(".card")?.classList.remove("dragging");dragId=null});
-let timer=null,touchCard=null,moved=false;
-grid.addEventListener("pointerdown",e=>{if(!document.body.classList.contains("editing")||e.pointerType==="mouse"||e.target.closest("button,label"))return;touchCard=e.target.closest(".card");moved=false;timer=setTimeout(()=>{moved=true;dragId=+touchCard.dataset.id;touchCard.classList.add("dragging");touchCard.setPointerCapture?.(e.pointerId)},280)});
-grid.addEventListener("pointermove",e=>{if(!touchCard||!moved)return;const t=document.elementFromPoint(e.clientX,e.clientY)?.closest(".card");if(!t||t===touchCard)return;const r=t.getBoundingClientRect();if(e.clientY<r.top+r.height/2)grid.insertBefore(touchCard,t);else grid.insertBefore(touchCard,t.nextSibling)});
-function end(){clearTimeout(timer);if(touchCard)touchCard.classList.remove("dragging");touchCard=null;moved=false;dragId=null}
-grid.addEventListener("pointerup",end);grid.addEventListener("pointercancel",end);
+
+let pointerCard=null,pointerId=null,dragging=false,lastY=0;
+function moveCard(y){
+  if(!pointerCard)return;
+  const cards=[...grid.querySelectorAll(".card")].filter(c=>c.style.display!=="none"&&c!==pointerCard);
+  let target=null;
+  for(const c of cards){const r=c.getBoundingClientRect();if(y<r.top+r.height/2){target=c;break}}
+  if(target) grid.insertBefore(pointerCard,target);
+  else if(cards.length) grid.appendChild(pointerCard);
+}
+grid.addEventListener("pointerdown",e=>{
+  if(!document.body.classList.contains("editing")||e.target.closest("button,label"))return;
+  const c=e.target.closest(".card");if(!c||c.style.display==="none")return;
+  pointerCard=c;pointerId=e.pointerId;lastY=e.clientY;dragging=false;
+  c.setPointerCapture?.(pointerId);
+  e.preventDefault();
+});
+grid.addEventListener("pointermove",e=>{
+  if(!pointerCard||e.pointerId!==pointerId)return;
+  e.preventDefault();
+  if(!dragging && Math.abs(e.clientY-lastY)>6){dragging=true;pointerCard.classList.add("dragging")}
+  if(dragging)moveCard(e.clientY);
+});
+function endPointer(e){
+  if(!pointerCard||e.pointerId!==pointerId)return;
+  e.preventDefault();
+  if(dragging){pointerCard.classList.remove("dragging");save()}
+  pointerCard.releasePointerCapture?.(pointerId);
+  pointerCard=null;pointerId=null;dragging=false;
+}
+grid.addEventListener("pointerup",endPointer);
+grid.addEventListener("pointercancel",endPointer);
+grid.addEventListener("lostpointercapture",()=>{if(pointerCard&&dragging){pointerCard.classList.remove("dragging");save()}pointerCard=null;pointerId=null;dragging=false});
 resetBtn.onclick=()=>{grid.querySelectorAll(".backup-check,.bonded-check").forEach(x=>x.checked=false);save()};
 load();render();
 })();
