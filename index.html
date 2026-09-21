@@ -8,8 +8,8 @@
 *{box-sizing:border-box}
 body{margin:0;padding:14px 10px 28px;background:#f7f7f8;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
 .wrap{max-width:900px;margin:auto}
-.header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:3px 0 10px}
-h1{font-size:20px;margin:0}.actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.header{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:3px 0 10px}.header h1{text-align:center}.actions{justify-content:center}
+h1{font-size:20px;margin:0}.actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
 button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px solid #aaa;border-radius:8px;background:#fff;color:#222}.action.active{background:#222;color:#fff}.col-setting{display:flex;align-items:center;gap:3px;font-size:10px;color:#666;border:1px solid #bbb;border-radius:8px;background:#fff;padding:2px 3px}.col-setting span{padding:0 3px}.col-btn{font:inherit;font-size:10px;min-width:24px;height:24px;padding:0;border:0;border-radius:6px;background:transparent;color:#555}.col-btn.active{background:#222;color:#fff}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.grid.one-col{grid-template-columns:1fr}
 .card{position:relative;display:flex;flex-direction:column;min-height:132px;padding:9px;border:1px solid #cfcfcf;border-radius:10px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)}
@@ -31,7 +31,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 <button class="reset" id="resetBtn" type="button">Reset Mission</button>
 </div></div>
 <div class="add-panel" id="addPanel"><div class="add-title">Hidden Pairs — tap a pair to show it</div><div class="hidden-list" id="hiddenList"></div></div>
-<div class="grid" id="grid"></div>\n<div class="version">Version 1.7</div>
+<div class="grid" id="grid"></div>\n<div class="version">Version 1.8</div>
 </div>
 <script>
 (()=>{
