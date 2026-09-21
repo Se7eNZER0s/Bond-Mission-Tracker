@@ -8,9 +8,9 @@
 *{box-sizing:border-box}
 body{margin:0;padding:14px 10px 28px;background:#f7f7f8;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
 .wrap{max-width:900px;margin:auto}
-.header{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:3px 0 10px}.header h1{text-align:center}.actions{justify-content:center}
-h1{font-size:20px;margin:0}.actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
-button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px solid #aaa;border-radius:8px;background:#fff;color:#222}.action.active{background:#222;color:#fff}.col-setting{display:flex;align-items:center;gap:3px;font-size:10px;color:#666;border:1px solid #bbb;border-radius:8px;background:#fff;padding:2px 3px}.col-setting span{padding:0 3px}.col-btn{font:inherit;font-size:10px;min-width:24px;height:24px;padding:0;border:0;border-radius:6px;background:transparent;color:#555}.col-btn.active{background:#222;color:#fff}
+.header{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:3px 0 10px}.header h1{text-align:center}
+h1{font-size:20px;margin:0}.actions{display:flex;gap:5px;flex-wrap:nowrap;justify-content:center;align-items:center;width:100%;overflow-x:auto;padding:0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.actions::-webkit-scrollbar{display:none}
+button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;white-space:nowrap;flex:0 0 auto;border:1px solid #aaa;border-radius:8px;background:#fff;color:#222}.action.active{background:#222;color:#fff}.col-setting{display:flex;align-items:center;gap:3px;font-size:10px;flex:0 0 auto;color:#666;border:1px solid #bbb;border-radius:8px;background:#fff;padding:2px 3px}.col-setting span{padding:0 3px}.col-btn{font:inherit;font-size:10px;min-width:24px;height:24px;padding:0;border:0;border-radius:6px;background:transparent;color:#555}.col-btn.active{background:#222;color:#fff}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.grid.one-col{grid-template-columns:1fr}
 .card{position:relative;display:flex;flex-direction:column;min-height:132px;padding:9px;border:1px solid #cfcfcf;border-radius:10px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .pairtext{flex:1;min-width:0;padding:1px 22px 0 4px}.name{font-size:11px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}.ach{font-size:9px;color:#777;min-height:11px;margin-top:3px}
@@ -19,7 +19,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 .bonded-row{margin-top:6px}.bonded{width:100%;height:30px;font-size:10px}.bonded:has(input:checked){background:#fff7cc;border-color:#d6a800;color:#876800}
 .hide-btn{position:absolute;top:5px;right:5px;border:0;background:transparent;color:#888;font-size:10px;padding:3px}
 .version{text-align:center;color:#999;font-size:9px;margin-top:12px;letter-spacing:.3px}.add-panel{display:none;margin-bottom:9px;padding:8px;border:1px solid #ccc;border-radius:10px;background:#fff}.add-panel.open{display:block}.add-title{font-size:11px;font-weight:700;margin-bottom:6px}.hidden-list{display:flex;flex-wrap:wrap;gap:5px}.add-item{font-size:10px;padding:6px 8px;border:1px solid #bbb;border-radius:7px;background:#fafafa}
-.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.editing .card *{user-select:none;-webkit-user-select:none}.editing .card button,.editing .card label{pointer-events:none}.card.dragging{position:fixed!important;margin:0!important;opacity:1;transform:scale(1.06);box-shadow:0 20px 45px rgba(0,0,0,.30),0 0 0 2px rgba(15,157,138,.4);z-index:1000;cursor:grabbing;pointer-events:none;transition:none}.card.dragging:after{content:"MOVE";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.9px;padding:3px 7px;border-radius:6px;background:#222;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);pointer-events:none}.drag-placeholder{border:2px dashed #0f9d8a;border-radius:10px;background:#e9faf7;min-height:132px;box-shadow:inset 0 0 0 1px rgba(15,157,138,.08)}.card.drop-target{border:2px dashed #555;padding:8px}
+.editing .card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.editing .card *{user-select:none;-webkit-user-select:none}.editing .card button,.editing .card label{pointer-events:none}.card.dragging{position:fixed!important;margin:0!important;opacity:1;transform:scale(1.04);box-shadow:0 20px 45px rgba(0,0,0,.30),0 0 0 2px rgba(15,157,138,.4);z-index:1000;cursor:grabbing;pointer-events:none;transition:none}.card.dragging:after{content:"MOVE";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.9px;padding:3px 7px;border-radius:6px;background:#222;color:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);pointer-events:none}.drag-placeholder{border:2px dashed #0f9d8a;border-radius:10px;background:#e9faf7;min-height:132px;box-shadow:inset 0 0 0 1px rgba(15,157,138,.08);opacity:.9}.card.drop-target{border:2px dashed #555;padding:8px}
 @media(max-width:520px){.header{align-items:stretch}h1{font-size:18px}.actions{max-width:65%}.action,.reset{font-size:10px;padding:6px}.grid{gap:6px}.card{min-height:132px;padding:8px}.name{font-size:10px}.toggle{height:34px;font-size:10px}.bonded{height:29px;font-size:9px}}
 </style>
 </head>
@@ -32,7 +32,7 @@ button{font:inherit}.action,.reset{font-size:11px;padding:7px 8px;border:1px sol
 </div></div>
 <div class="add-panel" id="addPanel"><div class="add-title">Hidden Pairs — tap a pair to show it</div><div class="hidden-list" id="hiddenList"></div></div>
 <div class="grid" id="grid"></div>
-<div class="version">Version 1.9</div>
+<div class="version">Version 2.0</div>
 </div>
 <script>
 (()=>{
@@ -63,35 +63,13 @@ grid.addEventListener("click",e=>{const b=e.target.closest(".hide-btn");if(b){co
 
 grid.addEventListener("change",save);
 
-let pointerCard=null,pointerId=null,dragging=false,lastY=0,holdTimer=null,dragOffsetX=0,dragOffsetY=0,placeholder=null;
-function positionDragged(x,y){
-  if(!pointerCard)return;
-  pointerCard.style.left=(x-dragOffsetX)+"px";
-  pointerCard.style.top=(y-dragOffsetY)+"px";
+let pointerCard=null,pointerId=null,dragging=false,holdTimer=null,placeholder=null,ghost=null,dragOffsetX=0,dragOffsetY=0;
+function clearDragPreview(){
+  if(ghost){ghost.remove();ghost=null}
+  if(placeholder){placeholder.remove();placeholder=null}
+  if(pointerCard){pointerCard.classList.remove("drag-source")}
 }
-function movePlaceholder(x,y){
-  if(!placeholder)return;
-  const cards=[...grid.querySelectorAll(".card")].filter(c=>c!==pointerCard&&c.style.display!=="none");
-  let target=null;
-  for(const c of cards){
-    const r=c.getBoundingClientRect();
-    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom){target=c;break}
-  }
-  if(!target){
-    let best=null,bestD=Infinity;
-    for(const c of cards){
-      const r=c.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,d=(x-cx)**2+(y-cy)**2;
-      if(d<bestD){bestD=d;best=c}
-    }
-    target=best;
-  }
-  if(target){
-    const r=target.getBoundingClientRect();
-    if(y<r.top+r.height/2 || (Math.abs(y-(r.top+r.height/2))<r.height*.2 && x<r.left+r.width/2)) grid.insertBefore(placeholder,target);
-    else grid.insertBefore(placeholder,target.nextSibling);
-  }else grid.appendChild(placeholder);
-}
-function beginDrag(){
+function startDrag(){
   if(!pointerCard||dragging)return;
   dragging=true;
   const r=pointerCard.getBoundingClientRect();
@@ -100,20 +78,61 @@ function beginDrag(){
   placeholder.style.height=r.height+"px";
   placeholder.style.width=r.width+"px";
   grid.insertBefore(placeholder,pointerCard);
-  pointerCard.classList.add("dragging");
-  pointerCard.style.width=r.width+"px";
-  pointerCard.style.height=r.height+"px";
-  positionDragged(lastX,lastY);
-  navigator.vibrate?.(25);
+  ghost=pointerCard.cloneNode(true);
+  ghost.classList.remove("drag-source");
+  ghost.classList.add("dragging");
+  ghost.style.width=r.width+"px";
+  ghost.style.height=r.height+"px";
+  ghost.style.left=(lastX-dragOffsetX)+"px";
+  ghost.style.top=(lastY-dragOffsetY)+"px";
+  document.body.appendChild(ghost);
+  pointerCard.classList.add("drag-source");
+  navigator.vibrate?.(20);
 }
-let lastX=0;
+function moveGhost(x,y){
+  if(!ghost)return;
+  ghost.style.left=(x-dragOffsetX)+"px";
+  ghost.style.top=(y-dragOffsetY)+"px";
+}
+function movePlaceholder(x,y){
+  if(!placeholder)return;
+  const cards=[...grid.querySelectorAll(".card")].filter(c=>c!==pointerCard&&c.style.display!=="none");
+  if(!cards.length){grid.appendChild(placeholder);return}
+  let nearest=cards[0],best=Infinity;
+  for(const card of cards){
+    const r=card.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const d=(x-cx)*(x-cx)+(y-cy)*(y-cy);
+    if(d<best){best=d;nearest=card}
+  }
+  const r=nearest.getBoundingClientRect();
+  const oneCol=grid.classList.contains("one-col");
+  const before=oneCol ? y<r.top+r.height/2 : x<r.left+r.width/2;
+  if(before) grid.insertBefore(placeholder,nearest);
+  else grid.insertBefore(placeholder,nearest.nextSibling);
+}
+function finishDrag(e){
+  if(!pointerCard||e.pointerId!==pointerId)return;
+  e.preventDefault();
+  clearTimeout(holdTimer);
+  if(dragging){
+    grid.insertBefore(pointerCard,placeholder);
+    clearDragPreview();
+    save();
+  }else{
+    clearDragPreview();
+  }
+  try{pointerCard.releasePointerCapture(pointerId)}catch(_){}
+  pointerCard=null;pointerId=null;dragging=false;
+}
+let lastX=0,lastY=0;
 grid.addEventListener("pointerdown",e=>{
   if(!document.body.classList.contains("editing"))return;
   const c=e.target.closest(".card");if(!c||c.style.display==="none")return;
   pointerCard=c;pointerId=e.pointerId;lastX=e.clientX;lastY=e.clientY;dragging=false;
-  const r=c.getBoundingClientRect();dragOffsetX=e.clientX-r.left;dragOffsetY=e.clientY-r.top;
+  const r=c.getBoundingClientRect();
+  dragOffsetX=e.clientX-r.left;dragOffsetY=e.clientY-r.top;
   c.setPointerCapture?.(pointerId);
-  holdTimer=setTimeout(beginDrag,180);
+  holdTimer=setTimeout(startDrag,180);
   e.preventDefault();
 });
 grid.addEventListener("pointermove",e=>{
@@ -121,32 +140,20 @@ grid.addEventListener("pointermove",e=>{
   lastX=e.clientX;lastY=e.clientY;
   e.preventDefault();
   if(!dragging && (Math.abs(e.clientX-(pointerCard.getBoundingClientRect().left+dragOffsetX))>7 || Math.abs(e.clientY-(pointerCard.getBoundingClientRect().top+dragOffsetY))>7)){
-    clearTimeout(holdTimer);beginDrag();
+    clearTimeout(holdTimer);startDrag();
   }
-  if(dragging){positionDragged(e.clientX,e.clientY);movePlaceholder(e.clientX,e.clientY)}
+  if(dragging){moveGhost(e.clientX,e.clientY);movePlaceholder(e.clientX,e.clientY)}
 });
-function finishDrag(e){
-  if(!pointerCard||e.pointerId!==pointerId)return;
-  e.preventDefault();clearTimeout(holdTimer);
-  if(dragging){
-    pointerCard.classList.remove("dragging");
-    pointerCard.style.position="";pointerCard.style.left="";pointerCard.style.top="";pointerCard.style.width="";pointerCard.style.height="";
-    if(placeholder){grid.insertBefore(pointerCard,placeholder);placeholder.remove();placeholder=null}
-    save();
-  }
-  pointerCard.releasePointerCapture?.(pointerId);
-  pointerCard=null;pointerId=null;dragging=false;
-}
 grid.addEventListener("pointerup",finishDrag);
 grid.addEventListener("pointercancel",finishDrag);
-grid.addEventListener("lostpointercapture",()=>{
+grid.addEventListener("lostpointercapture",e=>{
+  if(!pointerCard||e.pointerId!==pointerId)return;
   clearTimeout(holdTimer);
-  if(pointerCard&&dragging){
-    pointerCard.classList.remove("dragging");
-    pointerCard.style.position="";pointerCard.style.left="";pointerCard.style.top="";pointerCard.style.width="";pointerCard.style.height="";
-    if(placeholder){grid.insertBefore(pointerCard,placeholder);placeholder.remove();placeholder=null}
+  if(dragging){
+    grid.insertBefore(pointerCard,placeholder);
+    clearDragPreview();
     save();
-  }
+  }else clearDragPreview();
   pointerCard=null;pointerId=null;dragging=false;
 });
 resetBtn.onclick=()=>{grid.querySelectorAll(".backup-check,.bonded-check").forEach(x=>x.checked=false);save()};
